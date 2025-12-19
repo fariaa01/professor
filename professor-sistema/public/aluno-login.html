@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Aluno - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Card de Login -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900">Portal do Aluno</h1>
+                <p class="text-gray-600 mt-2">Entre com suas credenciais</p>
+            </div>
+
+            <!-- Formulário -->
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        required
+                        placeholder="seu@email.com"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        required
+                        placeholder="••••••"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                </div>
+
+                <!-- Mensagem de erro -->
+                <div id="errorMessage" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-800"></p>
+                </div>
+
+                <!-- Mensagem de sucesso -->
+                <div id="successMessage" class="hidden p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-sm text-green-800"></p>
+                </div>
+
+                <button 
+                    type="submit"
+                    id="loginButton"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95">
+                    Entrar
+                </button>
+            </form>
+
+            <!-- Credenciais de teste -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <p class="text-xs text-gray-500 text-center mb-3">Credenciais de teste:</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="fillCredentials('maria@exemplo.com', 'mariae')" class="p-2 bg-gray-100 hover:bg-gray-200 rounded text-left transition">
+                        <strong>Maria Santos</strong><br>
+                        <span class="text-gray-600">maria@exemplo.com</span>
+                    </button>
+                    <button onclick="fillCredentials('pedro@exemplo.com', 'pedroe')" class="p-2 bg-gray-100 hover:bg-gray-200 rounded text-left transition">
+                        <strong>Pedro Costa</strong><br>
+                        <span class="text-gray-600">pedro@exemplo.com</span>
+                    </button>
+                    <button onclick="fillCredentials('ana@exemplo.com', 'anaexe')" class="p-2 bg-gray-100 hover:bg-gray-200 rounded text-left transition">
+                        <strong>Ana Silva</strong><br>
+                        <span class="text-gray-600">ana@exemplo.com</span>
+                    </button>
+                    <button onclick="fillCredentials('lucas@exemplo.com', 'lucase')" class="p-2 bg-gray-100 hover:bg-gray-200 rounded text-left transition">
+                        <strong>Lucas Oliveira</strong><br>
+                        <span class="text-gray-600">lucas@exemplo.com</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard (aparece após login) -->
+        <div id="dashboard" class="hidden bg-white rounded-2xl shadow-2xl p-8 mt-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
+                <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                    Sair
+                </button>
+            </div>
+            <div id="dashboardContent" class="space-y-4">
+                <!-- Será preenchido via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000/api/aluno';
+        let authToken = null;
+
+        // Preencher credenciais de teste
+        function fillCredentials(email, password) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+        }
+
+        // Mostrar erro
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.querySelector('p').textContent = message;
+            errorDiv.classList.remove('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+
+        // Mostrar sucesso
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.querySelector('p').textContent = message;
+            successDiv.classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const button = document.getElementById('loginButton');
+
+            button.disabled = true;
+            button.textContent = 'Entrando...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.data.access_token;
+                    showSuccess(`Bem-vindo(a), ${data.data.aluno.nome}!`);
+                    
+                    setTimeout(() => {
+                        loadDashboard();
+                    }, 1000);
+                } else {
+                    showError(data.message || 'Erro ao fazer login');
+                }
+            } catch (error) {
+                showError('Erro de conexão com o servidor');
+                console.error(error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Entrar';
+            }
+        });
+
+        // Carregar dashboard
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('loginForm').parentElement.classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+
+                    const dash = data.data;
+                    const content = document.getElementById('dashboardContent');
+
+                    content.innerHTML = `
+                        <div class="bg-indigo-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-indigo-900 mb-2">${dash.aluno.nome}</h3>
+                            <p class="text-sm text-indigo-700">${dash.aluno.email}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-xs text-blue-600 mb-1">Total de Aulas</p>
+                                <p class="text-2xl font-bold text-blue-900">${dash.estatisticas.total_aulas}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="text-xs text-green-600 mb-1">Realizadas</p>
+                                <p class="text-2xl font-bold text-green-900">${dash.estatisticas.aulas_realizadas}</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <p class="text-xs text-yellow-600 mb-1">Faltas</p>
+                                <p class="text-2xl font-bold text-yellow-900">${dash.estatisticas.faltas}</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <p class="text-xs text-purple-600 mb-1">Carga Horária</p>
+                                <p class="text-2xl font-bold text-purple-900">${dash.estatisticas.carga_horaria_horas}h</p>
+                            </div>
+                        </div>
+
+                        ${dash.proximas_aulas.length > 0 ? `
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Próximas Aulas</h4>
+                                ${dash.proximas_aulas.map(aula => `
+                                    <div class="bg-gray-50 p-3 rounded mb-2">
+                                        <p class="font-medium text-gray-900">${aula.data_hora}</p>
+                                        <p class="text-sm text-gray-600">${aula.duracao_minutos} minutos</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${dash.plano ? `
+                            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-900 mb-2">Plano Contratado</h4>
+                                <p class="text-sm text-gray-700 mb-1"><strong>Tipo:</strong> ${dash.plano.tipo_plano_nome}</p>
+                                ${dash.plano.valor_total ? `<p class="text-sm text-gray-700"><strong>Valor:</strong> R$ ${dash.plano.valor_total.toFixed(2)}</p>` : ''}
+                            </div>
+                        ` : ''}
+                    `;
+                }
+            } catch (error) {
+                showError('Erro ao carregar dashboard');
+                console.error(error);
+            }
+        }
+
+        // Logout
+        function logout() {
+            authToken = null;
+            document.getElementById('loginForm').parentElement.classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
