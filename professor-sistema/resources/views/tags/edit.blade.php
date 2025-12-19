@@ -1,4 +1,7 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
+<div class="py-8">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Editar Tag</h1>
@@ -150,4 +153,5 @@
             </form>
         </x-card>
     </div>
-</x-app-layout>
+</div>
+@endsection

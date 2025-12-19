@@ -8,6 +8,10 @@ use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\MensagemController;
+use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MeetingChatController;
+use App\Http\Controllers\ConteudoController;
+use App\Http\Controllers\AlunoConteudoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -58,6 +62,33 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/mensagens', [MensagemController::class, 'store']);
     Route::patch('/api/mensagens/{aluno}/marcar-lidas', [MensagemController::class, 'markAsRead']);
     Route::get('/api/mensagens/nao-lidas', [MensagemController::class, 'unreadCount']);
+    
+    // Rotas de Reuniões Online (Meetings)
+    Route::resource('meetings', MeetingController::class);
+    Route::get('/meetings/room/{roomId}', [MeetingController::class, 'room'])->name('meetings.room');
+    Route::post('/meetings/{roomId}/join', [MeetingController::class, 'join'])->name('meetings.join');
+    Route::post('/meetings/{roomId}/leave', [MeetingController::class, 'leave'])->name('meetings.leave');
+    Route::post('/meetings/{roomId}/end', [MeetingController::class, 'end'])->name('meetings.end');
+    Route::post('/meetings/{meeting}/cancel', [MeetingController::class, 'cancel'])->name('meetings.cancel');
+    
+    // WebRTC Signaling
+    Route::post('/meetings/{roomId}/signal/offer', [MeetingController::class, 'sendOffer']);
+    Route::post('/meetings/{roomId}/signal/answer', [MeetingController::class, 'sendAnswer']);
+    Route::post('/meetings/{roomId}/signal/ice-candidate', [MeetingController::class, 'sendIceCandidate']);
+    
+    // Chat da Reunião
+    Route::get('/meetings/{roomId}/chat', [MeetingChatController::class, 'index']);
+    Route::post('/meetings/{roomId}/chat', [MeetingChatController::class, 'store']);
+    
+    // Conteúdos Gravados (Professor)
+    Route::resource('conteudos', ConteudoController::class);
+});
+
+// Rotas do Portal do Aluno
+Route::prefix('aluno')->name('aluno.')->middleware(['auth'])->group(function () {
+    Route::get('/conteudos', [AlunoConteudoController::class, 'index'])->name('conteudos.index');
+    Route::get('/conteudos/{conteudo}', [AlunoConteudoController::class, 'show'])->name('conteudos.show');
+    Route::post('/conteudos/{conteudo}/progresso', [AlunoConteudoController::class, 'atualizarProgresso'])->name('conteudos.progresso');
 });
 
 // Rotas do Portal do Aluno

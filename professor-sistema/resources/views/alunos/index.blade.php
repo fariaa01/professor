@@ -1,4 +1,7 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
+<div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-6 flex items-center justify-between">
@@ -169,7 +172,7 @@
                             </div>
                             
                             <div class="flex flex-col gap-2 ml-4">
-                                <!-- Linha 1: Ver Detalhes, Mensagens e Editar -->
+                                <!-- Linha 1: Ver Detalhes e Mensagens -->
                                 <div class="flex gap-2">
                                     <x-button variant="outline" size="sm" :href="route('alunos.show', $aluno)">
                                         Ver Detalhes
@@ -187,8 +190,25 @@
                                     </x-button>
                                 </div>
                                 
-                                <!-- Linha 2: Ações Rápidas -->
+                                <!-- Linha 2: Reunião e Ações Rápidas -->
                                 <div class="flex gap-2">
+                                    <!-- Iniciar Reunião -->
+                                    <form action="{{ route('meetings.store') }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="title" value="Reunião com {{ $aluno->nome }}">
+                                        <input type="hidden" name="aluno_id" value="{{ $aluno->id }}">
+                                        <button 
+                                            type="submit"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
+                                            title="Iniciar reunião online"
+                                        >
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                            Reunião
+                                        </button>
+                                    </form>
+                                    
                                     <!-- Toggle Ativo/Inativo -->
                                     <form method="POST" action="{{ route('alunos.toggle-status', $aluno) }}" class="inline">
                                         @csrf
@@ -250,4 +270,5 @@
             </x-card>
         @endif
     </div>
-</x-app-layout>
+</div>
+@endsection

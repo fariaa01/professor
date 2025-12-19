@@ -1,9 +1,30 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
+<div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-600">Visão geral da sua rotina de aulas</p>
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p class="mt-1 text-sm text-gray-600">Visão geral da sua rotina de aulas</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{{ route('meetings.create') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-sm transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Iniciar Reunião
+                </a>
+                <a href="{{ route('meetings.index') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    Ver Reuniões
+                </a>
+            </div>
         </div>
 
         <!-- Estatísticas -->
@@ -309,8 +330,10 @@
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    @push('scripts')
+@push('scripts')
     <script>
         // Notificação toast
         function showToast(message, type = 'success') {
@@ -439,5 +462,4 @@
         window.openRescheduleModal = openRescheduleModal;
         window.rescheduleAula = rescheduleAula;
     </script>
-    @endpush
-</x-app-layout>
+@endpush

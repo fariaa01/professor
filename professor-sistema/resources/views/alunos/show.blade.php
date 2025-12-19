@@ -1,4 +1,7 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
+<div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header com Ações -->
         <div class="mb-6 flex items-center justify-between">
@@ -16,12 +19,36 @@
                     {{ $aluno->ativo ? 'Ativo' : 'Inativo' }}
                 </x-badge>
             </div>
-            <x-button variant="outline" :href="route('alunos.edit', $aluno)">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                Editar
-            </x-button>
+            <div class="flex gap-2">
+                <!-- Botão Reunião Rápida -->
+                <form action="{{ route('meetings.store') }}" method="POST" class="inline">
+                    @csrf
+                    <input type="hidden" name="title" value="Reunião com {{ $aluno->nome }}">
+                    <input type="hidden" name="aluno_id" value="{{ $aluno->id }}">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition shadow">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Iniciar Reunião
+                    </button>
+                </form>
+                
+                <a href="{{ route('mensagens.chat', $aluno) }}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Chat
+                </a>
+
+                <x-button variant="outline" :href="route('alunos.edit', $aluno)">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Editar
+                </x-button>
+            </div>
         </div>
 
         <!-- Informações Básicas -->
@@ -216,4 +243,5 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

@@ -1,4 +1,7 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
+<div class="py-8">
     <div class="px-4 sm:px-6 lg:px-8" style="max-width: 1400px; margin: 0 auto;">
         <!-- Header -->
         <div class="mb-6 flex items-center justify-between">
@@ -335,4 +338,5 @@
             }
         });
     </script>
-</x-app-layout>
+</div>
+@endsection
