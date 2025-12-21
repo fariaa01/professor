@@ -1,192 +1,159 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-8">
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Criar Novo Conteúdo
-        </h2>
-    </x-slot>
+<div class="min-h-screen bg-gray-50">
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-blue-500">
-                <div class="p-8">
-                    <form action="{{ route('conteudos.store') }}" method="POST">
-                        @csrf
-
-                        <!-- Título -->
-                        <div class="mb-6">
-                            <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">
-                                Título do Conteúdo *
-                            </label>
-                            <input type="text" name="titulo" id="titulo" required
-                                   placeholder="Ex: Introdução à Álgebra Linear"
-                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                   value="{{ old('titulo') }}">
-                            @error('titulo')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Tipo de Conteúdo -->
-                        <div class="mb-6">
-                            <label for="tipo" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tipo de Conteúdo *
-                            </label>
-                            <select name="tipo" id="tipo" required
-                                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    onchange="toggleUrlField()">
-                                <option value="video" {{ old('tipo') === 'video' ? 'selected' : '' }}>Vídeo (YouTube, Vimeo)</option>
-                                <option value="link" {{ old('tipo') === 'link' ? 'selected' : '' }}>Link Externo</option>
-                                <option value="pdf" {{ old('tipo') === 'pdf' ? 'selected' : '' }}>Material PDF</option>
-                                <option value="texto" {{ old('tipo') === 'texto' ? 'selected' : '' }}>Texto/Artigo</option>
-                            </select>
-                            @error('tipo')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- URL -->
-                        <div class="mb-6" id="url-field">
-                            <label for="url" class="block text-sm font-medium text-gray-700 mb-2">
-                                Link do Vídeo/Conteúdo *
-                            </label>
-                            <input type="url" name="url" id="url"
-                                   placeholder="https://www.youtube.com/watch?v=..."
-                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                   value="{{ old('url') }}">
-                            <p class="mt-1 text-xs text-gray-500">
-                                Para YouTube: Use vídeos não listados para privacidade. Para Vimeo: Configure as permissões adequadas.
-                            </p>
-                            @error('url')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Duração (apenas para vídeos) -->
-                        <div class="mb-6" id="duracao-field">
-                            <label for="duracao_minutos" class="block text-sm font-medium text-gray-700 mb-2">
-                                Duração do Vídeo (em minutos)
-                            </label>
-                            <input type="number" name="duracao_minutos" id="duracao_minutos" min="0"
-                                   placeholder="Ex: 15"
-                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                   value="{{ old('duracao_minutos') }}">
-                            <input type="hidden" name="duracao_segundos" id="duracao_segundos">
-                            @error('duracao_segundos')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Descrição -->
-                        <div class="mb-6">
-                            <label for="descricao" class="block text-sm font-medium text-gray-700 mb-2">
-                                Descrição
-                            </label>
-                            <textarea name="descricao" id="descricao" rows="4"
-                                      placeholder="Descreva sobre o que é este conteúdo e o que os alunos aprenderão..."
-                                      class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('descricao') }}</textarea>
-                            @error('descricao')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Observações do Professor -->
-                        <div class="mb-6">
-                            <label for="observacoes" class="block text-sm font-medium text-gray-700 mb-2">
-                                Observações e Orientações
-                            </label>
-                            <textarea name="observacoes" id="observacoes" rows="3"
-                                      placeholder="Adicione dicas, recomendações ou pontos importantes para o aluno..."
-                                      class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('observacoes') }}</textarea>
-                            @error('observacoes')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Selecionar Alunos -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Disponível para os alunos: *
-                            </label>
-                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-                                @foreach($alunos as $aluno)
-                                    <label class="flex items-center py-2 hover:bg-gray-100 px-2 rounded cursor-pointer">
-                                        <input type="checkbox" name="alunos_ids[]" value="{{ $aluno->id }}"
-                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                               {{ is_array(old('alunos_ids')) && in_array($aluno->id, old('alunos_ids')) ? 'checked' : '' }}>
-                                        <span class="ml-3 text-sm text-gray-700">{{ $aluno->nome }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                            @error('alunos_ids')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-6">
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                                Status *
-                            </label>
-                            <select name="status" id="status" required
-                                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="publicado" {{ old('status') === 'publicado' ? 'selected' : '' }}>Publicado (visível para alunos)</option>
-                                <option value="rascunho" {{ old('status') === 'rascunho' ? 'selected' : '' }}>Rascunho (não visível)</option>
-                            </select>
-                        </div>
-
-                        <!-- Botões -->
-                        <div class="flex gap-3">
-                            <button type="submit"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition">
-                                Criar Conteúdo
-                            </button>
-                            <a href="{{ route('conteudos.index') }}"
-                               class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition">
-                                Cancelar
-                            </a>
-                        </div>
-                    </form>
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-5xl mx-auto px-6 lg:px-8 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Novo Conteúdo</h1>
+                    <p class="text-sm text-gray-500 mt-3">
+                        Crie e compartilhe material didático com seus alunos
+                    </p>
                 </div>
+
+                <a href="{{ route('conteudos.index') }}"
+                   class="inline-flex items-center px-5 py-3 text-sm font-medium
+                          text-gray-700 bg-white border border-gray-300
+                          rounded-xl hover:bg-gray-50 transition-all">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancelar
+                </a>
             </div>
         </div>
     </div>
 
-    <script>
-        // Converte minutos para segundos antes de enviar
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const minutos = document.getElementById('duracao_minutos').value;
-            if (minutos) {
-                document.getElementById('duracao_segundos').value = minutos * 60;
-            }
-        });
+    <!-- Content -->
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 py-12">
+        <form action="{{ route('conteudos.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-        // Toggle campo URL baseado no tipo
-        function toggleUrlField() {
-            const tipo = document.getElementById('tipo').value;
-            const urlField = document.getElementById('url-field');
-            const duracaoField = document.getElementById('duracao-field');
-            const urlInput = document.getElementById('url');
+            <!-- Informações Básicas -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm mb-14">
+                <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-900">Informações Básicas</h3>
+                </div>
 
-            if (tipo === 'texto') {
-                urlField.style.display = 'none';
-                urlInput.removeAttribute('required');
-            } else {
-                urlField.style.display = 'block';
-                urlInput.setAttribute('required', 'required');
-            }
+                <div class="p-10 space-y-10">
 
-            if (tipo === 'video') {
-                duracaoField.style.display = 'block';
-            } else {
-                duracaoField.style.display = 'none';
-            }
-        }
+                    <!-- Título -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Título do Conteúdo <span class="text-red-500">*</span>
+                        </label>
 
-        // Inicializa
-        toggleUrlField();
-    </script>
+                        <input type="text" name="titulo" required
+                               placeholder="Ex: Introdução à Álgebra Linear"
+                               value="{{ old('titulo') }}"
+                               class="w-full px-5 py-3.5 border border-gray-300 rounded-xl
+                                      focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition-all">
+
+                        @error('titulo')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Tipo -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">
+                            Tipo de Conteúdo <span class="text-red-500">*</span>
+                        </label>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+                            <!-- Video -->
+                            <label class="p-6 rounded-2xl border-2 border-gray-200 cursor-pointer
+                                          hover:border-blue-500 transition-all
+                                          has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                                <input type="radio" name="tipo" value="video" class="sr-only"
+                                       {{ old('tipo','video') === 'video' ? 'checked' : '' }}
+                                       onchange="updateContentType()">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 mx-auto mb-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                                    </svg>
+                                    <p class="font-medium">Vídeo</p>
+                                </div>
+                            </label>
+
+                            <!-- PDF -->
+                            <label class="p-6 rounded-2xl border-2 border-gray-200 cursor-pointer
+                                          hover:border-red-500 transition-all
+                                          has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                <input type="radio" name="tipo" value="pdf" class="sr-only"
+                                       {{ old('tipo') === 'pdf' ? 'checked' : '' }}
+                                       onchange="updateContentType()">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 mx-auto mb-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                              d="M4 4a2 2 0 012-2h4.586L15.414 6V16a2 2 0 01-2 2H6a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    <p class="font-medium">PDF</p>
+                                </div>
+                            </label>
+
+                            <!-- Link -->
+                            <label class="p-6 rounded-2xl border-2 border-gray-200 cursor-pointer
+                                          hover:border-purple-500 transition-all
+                                          has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+                                <input type="radio" name="tipo" value="link" class="sr-only"
+                                       {{ old('tipo') === 'link' ? 'checked' : '' }}
+                                       onchange="updateContentType()">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 mx-auto mb-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                              d="M12.586 4.586a2 2 0 112.828 2.828l-3 3"></path>
+                                    </svg>
+                                    <p class="font-medium">Link</p>
+                                </div>
+                            </label>
+
+                            <!-- Texto -->
+                            <label class="p-6 rounded-2xl border-2 border-gray-200 cursor-pointer
+                                          hover:border-gray-500 transition-all
+                                          has-[:checked]:border-gray-500 has-[:checked]:bg-gray-100">
+                                <input type="radio" name="tipo" value="texto" class="sr-only"
+                                       {{ old('tipo') === 'texto' ? 'checked' : '' }}
+                                       onchange="updateContentType()">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 mx-auto mb-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                              d="M4 4a2 2 0 012-2h4.586L15.414 6V16z"></path>
+                                    </svg>
+                                    <p class="font-medium">Texto</p>
+                                </div>
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end gap-6 pt-8 border-t border-gray-200">
+                <a href="{{ route('conteudos.index') }}"
+                   class="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all">
+                    Cancelar
+                </a>
+
+                <button type="submit"
+                        class="px-7 py-3 rounded-xl bg-blue-600 text-white font-medium
+                               hover:bg-blue-700 shadow-md hover:shadow-lg transition-all">
+                    Criar Conteúdo
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
+
+<script>
+function updateContentType() {}
+</script>
 @endsection
