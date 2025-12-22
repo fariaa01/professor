@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Aluno;
 use App\Models\Aula;
+use App\Models\Tag;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -69,6 +70,14 @@ class DashboardController extends Controller
             ->with(['horariosAtivos'])
             ->get();
 
+        // Lista de alunos ativos para formulários/modais
+        $alunos = Aluno::where('user_id', $user->id)
+            ->where('ativo', true)
+            ->get();
+
+        // Tags do usuário (para o formulário de aluno)
+        $tags = Tag::where('user_id', $user->id)->get();
+
         $inicioSemana = Carbon::now()->startOfWeek();
         
         foreach ($alunosComHorarios as $aluno) {
@@ -107,7 +116,9 @@ class DashboardController extends Controller
             'faltasProfessor',
             'cargaHoraria',
             'proximasAulas',
-            'aulasSemana'
+            'aulasSemana',
+            'alunos',
+            'tags'
         ));
     }
 }
