@@ -13,6 +13,7 @@ use App\Http\Controllers\MeetingChatController;
 use App\Http\Controllers\ConteudoController;
 use App\Http\Controllers\AlunoConteudoController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Aluno\Api\DashboardDataController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -84,38 +85,30 @@ Route::middleware('auth')->group(function () {
     Route::resource('conteudos', ConteudoController::class);
 });
 
-// Rotas do Portal do Aluno
-Route::prefix('aluno')->name('aluno.')->middleware(['auth'])->group(function () {
+// Rotas do Portal do Aluno (autenticação separada)
+Route::prefix('aluno')->name('aluno.')->middleware(['auth:aluno_web'])->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Aluno\AlunoDashboardController::class, 'index'])->name('dashboard');
     Route::get('/conteudos', [AlunoConteudoController::class, 'index'])->name('conteudos.index');
     Route::get('/conteudos/{conteudo}', [AlunoConteudoController::class, 'show'])->name('conteudos.show');
     Route::post('/conteudos/{conteudo}/progresso', [AlunoConteudoController::class, 'atualizarProgresso'])->name('conteudos.progresso');
+    Route::get('/aulas', function () { return view('aluno.aulas'); })->name('aulas');
+    Route::get('/aulas/{id}', function ($id) { return view('aluno.aula-detalhes'); })->name('aulas.detalhes');
+    Route::get('/pagamentos', function () { return view('aluno.pagamentos'); })->name('pagamentos');
+    Route::get('/mensagens', function () { return view('aluno.mensagens'); })->name('mensagens');
+    Route::get('/connect', [App\Http\Controllers\Aluno\AlunoConnectController::class, 'show'])->name('connect');
+    Route::post('/connect', [App\Http\Controllers\Aluno\AlunoConnectController::class, 'connect'])->name('connect.post');
 });
 
-// Rotas do Portal do Aluno
+// Endpoint JSON exclusivo do aluno para o dashboard (não faz redirect)
+Route::get('/aluno/dashboard/dados', [DashboardDataController::class, 'dados'])->middleware('auth:aluno_web')->name('aluno.dashboard.dados');
+
+// Rotas públicas do aluno: registro e login (guard separado)
 Route::prefix('aluno')->name('aluno.')->group(function () {
-    Route::get('/login', function () {
-        return view('aluno.login');
-    })->name('login');
-    
-    Route::get('/dashboard', function () {
-        return view('aluno.dashboard');
-    })->name('dashboard');
-    
-    Route::get('/aulas', function () {
-        return view('aluno.aulas');
-    })->name('aulas');
-    
-    Route::get('/aulas/{id}', function ($id) {
-        return view('aluno.aula-detalhes');
-    })->name('aulas.detalhes');
-    
-    Route::get('/pagamentos', function () {
-        return view('aluno.pagamentos');
-    })->name('pagamentos');
-    
-    Route::get('/mensagens', function () {
-        return view('aluno.mensagens');
-    })->name('mensagens');
+    Route::get('/register', [App\Http\Controllers\Aluno\AlunoRegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Aluno\AlunoRegisterController::class, 'register'])->name('register.post');
+    Route::get('/login', [App\Http\Controllers\Aluno\AlunoAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Aluno\AlunoAuthController::class, 'login'])->name('login.post');
+    Route::post('/logout', [App\Http\Controllers\Aluno\AlunoAuthController::class, 'logout'])->name('logout');
 });
 
 require __DIR__.'/auth.php';

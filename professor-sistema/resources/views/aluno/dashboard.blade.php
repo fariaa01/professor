@@ -1,3 +1,74 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard Aluno</title>
+    <style>
+        .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;}
+        .modal{background:#fff;padding:20px;border-radius:8px;max-width:420px;width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.2);} 
+        .modal h2{margin-top:0}
+        .hidden{display:none}
+        .error{color:#c00}
+        .success{color:#070}
+        .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+        .modal input[type="text"]{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px}
+        .modal button{padding:8px 12px;border-radius:4px;border:0;background:#2563eb;color:#fff}
+        .modal .btn-secondary{background:#6b7280}
+    </style>
+</head>
+<body>
+    <h1>Dashboard do Aluno</h1>
+
+    @if(session('status'))
+        <div class="success">{{ session('status') }}</div>
+    @endif
+
+    @if(! $connected)
+        <p>Você ainda não está conectado a nenhum professor.</p>
+        <p>Por favor, informe o ID do professor para se conectar.</p>
+        <button id="open-connect">Conectar com um professor</button>
+
+        <!-- Modal de conexão -->
+        <div id="connect-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+            <div class="modal">
+                <h2>Conectar com Professor</h2>
+                @if($errors->has('professor_id'))
+                    <div class="error">{{ $errors->first('professor_id') }}</div>
+                @endif
+                <form method="POST" action="{{ route('aluno.connect.post') }}">
+                    @csrf
+                    <label for="professor_id">ID do professor</label>
+                    <input id="professor_id" name="professor_id" type="text" value="{{ old('professor_id') }}" required />
+                    <div class="actions">
+                        <button type="button" class="btn-secondary" id="close-connect">Fechar</button>
+                        <button type="submit">Conectar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const modal = document.getElementById('connect-modal');
+            const openBtn = document.getElementById('open-connect');
+            const closeBtn = document.getElementById('close-connect');
+            openBtn.addEventListener('click', ()=> modal.classList.remove('hidden'));
+            closeBtn.addEventListener('click', ()=> modal.classList.add('hidden'));
+            // se há erros de validação ou não conectado, abrir automaticamente
+            @if($errors->any())
+                modal.classList.remove('hidden');
+            @elseif(! $connected)
+                // abrir automaticamente na primeira visita
+                modal.classList.remove('hidden');
+            @endif
+        </script>
+
+    @else
+        <!-- Aluno conectado: conteúdo do dashboard será carregado abaixo -->
+    @endif
+
+</body>
+</html>
 <x-aluno-layout>
     <div class="px-4 sm:px-6 lg:px-8" style="max-width: 1400px; margin: 0 auto;">
         <!-- Header -->
@@ -40,21 +111,21 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000/api/aluno';
-        const token = localStorage.getItem('aluno_token');
-        const alunoData = JSON.parse(localStorage.getItem('aluno_data') || '{}');
-
-        if (!token) {
-            window.location.href = '{{ route("aluno.login") }}';
-        }
-
-        document.getElementById('alunoNome').textContent = alunoData.nome || '';
+        const API_DADOS_URL = '/aluno/dashboard/dados';
 
         async function loadDashboard() {
             try {
-                const response = await fetch(`${API_BASE_URL}/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch(API_DADOS_URL, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
                 });
+
+                if (response.status === 401) {
+                    // aluno não autenticado - redirecionar para login seguro
+                    window.location.href = '{{ route("aluno.login") }}';
+                    return;
+                }
 
                 const data = await response.json();
 
@@ -64,8 +135,7 @@
                     renderAulasRecentes(data.data.aulas_recentes);
                     renderPlano(data.data.plano);
                 } else {
-                    alert('Sessão expirada. Faça login novamente.');
-                    logout();
+                    console.error('Falha ao carregar dados do dashboard:', data.message || data);
                 }
             } catch (error) {
                 console.error('Erro ao carregar dashboard:', error);

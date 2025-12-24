@@ -18,13 +18,15 @@
         <!-- Card de Login -->
         <div class="w-full sm:max-w-4xl px-10 py-10 bg-white shadow-lg overflow-hidden sm:rounded-xl border border-gray-200">
             <!-- Formulário -->
-            <form id="loginForm" class="space-y-4 max-w-md mx-auto">
+            <form id="loginForm" method="POST" action="{{ route('aluno.login.post') }}" class="space-y-4 max-w-md mx-auto">
+                @csrf
                 <!-- Email -->
                 <div>
                     <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
                     <input 
                         type="email" 
-                        id="email" 
+                        id="email"
+                        name="email" 
                         required
                         placeholder="seu@email.com"
                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -36,6 +38,7 @@
                     <input 
                         type="password" 
                         id="password" 
+                        name="password"
                         required
                         placeholder="••••••"
                         class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
@@ -106,72 +109,11 @@
         </div>
     </div>
 
-    <script>
-        const API_BASE_URL = 'http://localhost:8000/api/aluno';
-        let authToken = null;
-
-        // Preencher credenciais de teste
-        function fillCredentials(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
-        }
-
-        // Mostrar erro
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.querySelector('p').textContent = message;
-            errorDiv.classList.remove('hidden');
-            document.getElementById('successMessage').classList.add('hidden');
-        }
-
-        // Mostrar sucesso
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.querySelector('p').textContent = message;
-            successDiv.classList.remove('hidden');
-            document.getElementById('errorMessage').classList.add('hidden');
-        }
-
-        // Login
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const button = document.getElementById('loginButton');
-
-            button.disabled = true;
-            button.textContent = 'Entrando...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    authToken = data.data.access_token;
-                    localStorage.setItem('aluno_token', authToken);
-                    localStorage.setItem('aluno_data', JSON.stringify(data.data.aluno));
-                    
-                    showSuccess(`Bem-vindo(a), ${data.data.aluno.nome}!`);
-                    
-                    setTimeout(() => {
-                        window.location.href = '{{ route("aluno.dashboard") }}';
-                    }, 1000);
-                } else {
-                    showError(data.message || 'Erro ao fazer login');
+            <script>
+                // Apenas helpers de preenchimento para teste
+                function fillCredentials(email, password) {
+                    document.getElementById('email').value = email;
+                    document.getElementById('password').value = password;
                 }
-            } catch (error) {
-                showError('Erro de conexão com o servidor');
-                console.error(error);
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Entrar';
-            }
-        });
-    </script>
+            </script>
 </x-guest-layout>

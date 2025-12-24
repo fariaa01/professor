@@ -42,7 +42,11 @@ return [
         ],
 
         'aluno' => [
-            'driver' => 'jwt',
+            'driver' => 'session',
+            'provider' => 'alunos',
+        ],
+        'aluno_web' => [
+            'driver' => 'session',
             'provider' => 'alunos',
         ],
     ],
